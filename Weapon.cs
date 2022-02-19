@@ -12,16 +12,11 @@ public class WeaponProgram
             if (_damage < 0)
                 throw new Exception("Damage is less than 0");
 
-            if (CanFire == false)
+            if (_bullets <= 0)
                 return
 
             player.TakeDamage(_damage);
             _bullets -= 1;
-        }
-
-        private bool CanFire()
-        {
-            return _bullets > 0;
         }
     }
 
