@@ -10,6 +10,9 @@ public class ShopProgram
 
         public Good(string name)
         {
+            if (name == null)
+                throw new System.NullReferenceException("Имя не может быть null!");
+
             Name = name;
         }
     }
@@ -21,6 +24,9 @@ public class ShopProgram
 
         public Cart(Shop shop)
         {
+            if (shop == null)
+                throw new System.NullReferenceException("Магазин не может быть null!");
+
             _goods = new Dictionary<Good, int>();
             _shop = shop;
         }
@@ -30,34 +36,38 @@ public class ShopProgram
         public void Add(Good good, int amount)
         {
             if (amount < 1)
-                throw new Exception("Количество заказываемого товара не может быть меньше 1!");
+                throw new System.ArgumentException("Количество добавляемого товара не может быть меньше 1!");
 
-            if (_shop.IsAvailable(good, amount))
+            if (_shop.IsAvailable(good, amount) == false)
+            {
+                throw new System.ArgumentException("Количество добавляемого товара не может быть больше количества товара на складе!");
+            }
+            else
             {
                 if (_goods.ContainsKey[good])
                     _goods[good] += amount;
                 else
                     _goods[good] = amount;
-            }  
+            }
         }
 
         public void Remove(Good good, int amount)
         {
             if (amount < 1)
-                throw new Exception("Количество удаляемого товара не может быть меньше 1!");
+                throw new System.ArgumentException("Количество удаляемого товара не может быть меньше 1!");
 
-            if (_goods.ContainsKey[good])
+            if (_goods.ContainsKey[good] == false)
             {
-                if (_goods[good] > amount)
-                    _goods[good] -= amount;
-                else if (_goods[good] == amount)
-                    _goods.Remove(good);
-                else
-                    throw new Exception("Нет такого количества товара в корзине!");
+                throw new System.ArgumentException("Такого товара нет в корзине!");
             }
             else
             {
-                throw new Exception("Такого товара нет в корзине!");
+                if (_goods[good] < amount)
+                    throw new System.ArgumentException("Нет такого количества товара в корзине!");
+                else if (_goods[good] > amount)
+                    _goods[good] -= amount;
+                else 
+                    _goods.Remove(good);
             }
         }
 
@@ -69,10 +79,16 @@ public class ShopProgram
 
     class Order
     {
-        public string Paylink { get; private set; }
+        public readonly string Paylink;
 
         public Order(IReadOnlyDictionary<Good, int> availableGoods, IReadOnlyDictionary<Good, int> notAvailableGoods)
         {
+            if (availableGoods == null)
+                throw new System.ArgumentException("Доступные товары не могут быть null!");
+
+            if (notAvailableGoods == null)
+                throw new System.ArgumentException("Недоступные товары не могут быть null!");
+
             Paylink = "random-link.com";
             AvailableGoods = availableGoods;
             NotAvailableGoods = notAvailableGoods;
@@ -89,6 +105,9 @@ public class ShopProgram
 
         public Shop(Warehouse warehouse)
         {
+            if (warehouse == null)
+                throw new System.NullReferenceException("Склад не может быть null!");
+
             _warehouse = warehouse;
         }
 
@@ -108,7 +127,10 @@ public class ShopProgram
         public Order Order(Cart orderFromCart, IReadOnlyDictionary<Good, int> goods)
         {
             if (_carts.Contains(orderFromCart) == false)
-                throw new Exception("Ошибка корзины!");
+                throw new System.ArgumentException("Неизвестная корзина!");
+
+            if (goods == null)
+                throw new System.ArgumentException("Словарь товаров не может быть null!");
 
             Dictionary<Good, int> availableGoods = new Dictionary<Good, int>();
             Dictionary<Good, int> notAvailableGoods = new Dictionary<Good, int>();
@@ -152,7 +174,7 @@ public class ShopProgram
         public void Delieve(Good good, int amount)
         {
             if (amount < 1)
-                throw new Exception("Количество доставляемого товара не может быть меньше 1!");
+                throw new System.ArgumentException("Количество доставляемого товара не может быть меньше 1!");
 
             if (_goods.ContainsKey(good))
                 _goods[good] += amount;
@@ -162,19 +184,19 @@ public class ShopProgram
 
         public void PullGoods(IReadOnlyDictionary<Good, int> goods)
         {
+            if (goods == null)
+                throw new System.ArgumentException("Словарь товаров не может быть null!");
+
+            foreach (var goodPosition in goods)
+                if (IsAvailable(goodPosition.Key, goodPosition.Value) == false)
+                    throw new System.ArgumentException("Недостаточно товара на складе!");
+          
             foreach (var goodPosition in goods)
             {
-                if (IsAvailable(goodPosition.Key, goodPosition.Value))
-                {
-                    _goods[good] -= amount;
+                _goods[good] -= amount;
 
-                    if (_goods[good] == 0)
-                        _goods.Remove(good);
-                }
-                else
-                {
-                    throw new Exception("Недостаточно товара на складе!");
-                }
+                if (_goods[good] == 0)
+                    _goods.Remove(good);
             }
         }
 
@@ -189,7 +211,7 @@ public class ShopProgram
         public bool IsAvailable(Good good, int amount)
         {
             if (amount < 1)
-                throw new Exception("Количество заказываемого товара не может быть меньше 1!");
+                throw new System.ArgumentException("Количество заказываемого товара не может быть меньше 1!");
 
             return _goods.ContainsKey[good] == true && _goods[good] >= amount;
         }
