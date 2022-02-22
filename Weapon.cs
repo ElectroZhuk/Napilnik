@@ -57,18 +57,13 @@ public class WeaponProgram
 
         public void Damage(int damage)
         {
-            if (CanDamage() == false)
-                throw new System.InvalidOperationException("Невозможно нанести урон!");
+            if (IsDead == true)
+                throw new System.InvalidOperationException("Игрок мертв!");
 
             Health -= Math.Max(Health - damage, 0);
 
             if (Health == 0)
                 Die();
-        }
-
-        public bool CanDamage()
-        {
-            return IsDead == false;
         }
 
         private void Die()
