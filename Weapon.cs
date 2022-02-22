@@ -91,6 +91,9 @@ public class WeaponProgram
 
         public void OnSeePlayer(Player player)
         {
+            if (player == null)
+                throw new System.NullReferenceException("Игрок не может быть null!");
+
             if (_weapon.CanShoot())
                 _weapon.Shoot(player);
         }
